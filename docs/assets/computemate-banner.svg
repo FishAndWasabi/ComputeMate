@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="title desc">
+  <title id="title">ComputeMate · 算力管家</title>
+  <desc id="desc">少翻终端，多跑实验。Agent、CLI、Web 与 VS Code 共用项目服务器工具。</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#102e28"/><stop offset="1" stop-color="#1b5547"/></linearGradient>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#d9f1d8" stroke-opacity=".055"/></pattern>
+  </defs>
+  <rect width="1200" height="400" rx="24" fill="url(#bg)"/>
+  <rect width="1200" height="400" rx="24" fill="url(#grid)"/>
+  <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <rect x="54" y="47" width="139" height="30" rx="15" fill="#d4f0b7"/>
+    <text x="123" y="67" text-anchor="middle" font-size="13" font-weight="700" letter-spacing="1.4" fill="#173c30">AGENT SKILL</text>
+    <text x="51" y="162" fill="#f5faee" font-size="77" font-weight="750" letter-spacing="-3">ComputeMate</text>
+    <text x="57" y="210" fill="#d3e6d8" font-size="25" letter-spacing="5">算力管家</text>
+    <text x="55" y="278" fill="#fff" font-size="30" font-weight="600">少翻终端，多跑实验。</text>
+    <text x="57" y="347" fill="#acd0bb" font-size="15" letter-spacing="2">SKILL · CLI · WEB · VS CODE</text>
+    <g transform="translate(778 64)">
+      <rect width="355" height="272" rx="18" fill="#123e34" stroke="#679c80" stroke-opacity=".65"/>
+      <circle cx="26" cy="27" r="4" fill="#c6e8ab"/>
+      <text x="41" y="32" font-size="13" fill="#d0e8d7" letter-spacing="1">YOUR PROJECT</text>
+      <line x1="22" y1="48" x2="332" y2="48" stroke="#365f50"/>
+      <g font-size="18" fill="#ecf6e9">
+        <text x="28" y="91">服务器</text><text x="326" y="91" text-anchor="end" fill="#aacbb5" font-size="13">SSH / GPU</text>
+        <text x="28" y="137">环境</text><text x="326" y="137" text-anchor="end" fill="#aacbb5" font-size="13">CONDA / VENV</text>
+        <text x="28" y="183">代码</text><text x="326" y="183" text-anchor="end" fill="#aacbb5" font-size="13">READ / SYNC</text>
+        <text x="28" y="229">产物</text><text x="326" y="229" text-anchor="end" fill="#aacbb5" font-size="13">LOGS / WEIGHTS</text>
+      </g>
+    </g>
+  </g>
+</svg>

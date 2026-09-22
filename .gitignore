@@ -1,0 +1,18 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+node_modules/
+dist/
+build/
+*.vsix
+*.sqlite*
+.DS_Store
+extensions/vscode/resources/
+skills/cloud-servers/scripts/cloud_servers/web_dist/
+
+# Local promotional drafts, deployment notes and inventories
+docs/promotion/
+docs/internal/
+.cloud-servers/
+*.log

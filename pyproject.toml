@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "computemate"
+version = "0.1.0"
+description = "ComputeMate: your server companion for agents and computer experiments"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/FishAndWasabi/ComputeMate"
+Repository = "https://github.com/FishAndWasabi/ComputeMate"
+
+[project.scripts]
+computemate = "cloud_servers.cli:main"
+cloud-servers = "cloud_servers.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "skills/cloud-servers/scripts"}
+
+[tool.setuptools.packages.find]
+where = ["skills/cloud-servers/scripts"]
+include = ["cloud_servers*"]
+
+[tool.setuptools.package-data]
+cloud_servers = ["web_dist/*", "web_dist/assets/*"]

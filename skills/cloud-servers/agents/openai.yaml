@@ -1,0 +1,6 @@
+interface:
+  display_name: "ComputeMate · 算力管家"
+  icon_small: "./assets/computemate-icon.png"
+  icon_large: "./assets/computemate-icon.png"
+  short_description: "按项目管理服务器、代码、环境与实验产物，让 Agent 接手服务器杂活"
+  default_prompt: "使用 $cloud-servers 查看当前项目的服务器、GPU 与已有环境，并列出适合本次实验的候选机器。"

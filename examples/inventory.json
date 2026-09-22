@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "entities": {
+    "group": [
+      { "id": "research", "name": "研究实验", "description": "模型训练与评测" },
+      { "id": "services", "name": "推理服务", "description": "服务与开发环境" }
+    ],
+    "server": [
+      { "id": "gpu-lab", "name": "GPU 实验节点", "ssh": { "alias": "your-gpu-ssh-alias" }, "groups": ["research"], "role": "compute", "labels": ["training"], "purpose": "模型训练", "notes": "示例记录：使用前替换 SSH alias。" },
+      { "id": "cluster-login", "name": "集群登录节点", "ssh": { "alias": "your-cluster-ssh-alias", "proxy_jump": "your-bastion-alias" }, "groups": ["research"], "role": "login", "labels": ["slurm"], "purpose": "提交 Slurm 作业" },
+      { "id": "inference", "name": "推理开发节点", "ssh": { "alias": "your-inference-ssh-alias" }, "groups": ["services"], "role": "general", "labels": ["inference"] }
+    ],
+    "environment": [
+      { "id": "torch", "name": "PyTorch", "server": "gpu-lab", "type": "conda", "selector": "torch", "notes": "示例，需按实际环境修改" }
+    ],
+    "project": [
+      { "id": "baseline", "name": "Baseline experiment", "placements": [{ "server": "gpu-lab", "path": "/workspace/baseline", "environment": "torch" }] }
+    ],
+    "artifact": []
+  }
+}

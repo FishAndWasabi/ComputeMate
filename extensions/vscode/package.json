@@ -1,0 +1,101 @@
+{
+  "name": "cloud-server-skills",
+  "displayName": "ComputeMate · 算力管家",
+  "icon": "media/computemate-icon.png",
+  "description": "Your server companion: project-scoped inventory and SSH tools for agents, CLI and visual workflows.",
+  "version": "0.1.0",
+  "publisher": "cloud-server-skills",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "main": "./dist/extension.cjs",
+  "activationEvents": [
+    "onView:cloudServers.inventory"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Inventory can be queried; remote changes require a trusted workspace."
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "cloudServers.open",
+        "title": "ComputeMate: 打开实验工作台"
+      },
+      {
+        "command": "cloudServers.refresh",
+        "title": "ComputeMate: 刷新台账",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "cloudServers.initialize",
+        "title": "ComputeMate: 初始化项目台账"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "cloudServers",
+          "title": "ComputeMate",
+          "icon": "media/server.svg"
+        }
+      ]
+    },
+    "views": {
+      "cloudServers": [
+        {
+          "id": "cloudServers.inventory",
+          "name": "服务器",
+          "type": "tree"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "cloudServers.open",
+          "when": "view == cloudServers.inventory",
+          "group": "navigation"
+        },
+        {
+          "command": "cloudServers.refresh",
+          "when": "view == cloudServers.inventory",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "ComputeMate",
+      "properties": {
+        "cloudServers.pythonPath": {
+          "type": "string",
+          "default": "python3",
+          "scope": "machine",
+          "description": "Python 3.11+ executable on the workspace host. Remote SSH workspaces use the remote interpreter."
+        },
+        "cloudServers.databasePath": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "description": "Explicit inventory override for this project. Empty binds to the selected workspace folder; initialize it with ComputeMate: 初始化项目台账."
+        }
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FishAndWasabi/ComputeMate.git"
+  },
+  "homepage": "https://github.com/FishAndWasabi/ComputeMate",
+  "bugs": {
+    "url": "https://github.com/FishAndWasabi/ComputeMate/issues"
+  }
+}
