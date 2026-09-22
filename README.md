@@ -1,64 +1,66 @@
 <div align="center">
 
-<img src="docs/assets/computemate-icon.png" alt="ComputeMate 算力管家图标" width="112" height="112" />
+<img src="docs/assets/computemate-icon.png" alt="ComputeMate icon" width="112" height="112" />
 
-# ComputeMate · 算力管家
+# ComputeMate
 
-**少翻终端，多跑实验。**
+**English** | [简体中文](README.zh-CN.md)
 
-你的服务器搭子，也是 Agent 的算力工具箱。
+**Less terminal hopping. More experiments.**
 
-按项目管理服务器、代码、环境和实验产物。Agent 来操作，你随时看得见。
+Your server sidekick. Your agent's compute toolkit.
 
-[快速开始](#快速开始) · [交给 Agent](#交给-agent) · [可视化](#想自己看也很方便) · [使用指南](docs/usage.md) · [反馈建议](https://github.com/FishAndWasabi/ComputeMate/issues)
+Keep servers, code, environments, and experiment artifacts organized by project. Let your agent operate; keep the whole picture in view.
+
+[Quick start](#quick-start) · [Ask your agent](#ask-your-agent) · [Visual interfaces](#see-whats-going-on) · [Usage guide (中文)](docs/usage.md) · [Feedback](https://github.com/FishAndWasabi/ComputeMate/issues)
 
 `Agent Skill` · `Python 3.11+` · `SSH / tmux / Slurm` · `CLI / Web / VS Code`
 
 </div>
 
-## 实验还没开始，人先被服务器管理跑累了
+## Your experiment hasn't started. You're already juggling servers.
 
-机器有好几台，项目也不止一个。每天开工先回忆：
+Several machines. Several projects. Every morning, the same questions:
 
-- 这次该连哪台机器，哪张卡还有空间？
-- 代码在 `/workspace`，还是上次那个目录？
-- 这个项目用哪个 Conda 环境？
-- 昨晚的任务在哪个 tmux 会话里，日志和 checkpoint 又放哪了？
+- Which server should I connect to? Which GPU has room?
+- Is the code under `/workspace`, or that other directory from last week?
+- Which Conda environment does this project use?
+- Where did last night's tmux session, logs, and checkpoint end up?
 
-**ComputeMate 把这些零散信息放进项目自己的台账，再给 Agent 一套能实际调用的工具。**
+**ComputeMate puts those scattered details in an inventory for each project, then gives your agent tools to act on them.**
 
-你描述目标，Agent 查询资源、访问代码、使用已有环境、调用原生任务工具；你也可以直接打开终端、网页或 VS Code 查看。
+Describe your goal. Your agent can inspect resources, access code, use existing environments, and work with native session and job tools. You can also inspect everything through the CLI, a local webpage, or VS Code.
 
-## 六个让实验少点内耗的理由
+## Six reasons to spend less time on server chores
 
-| 优点 | 用起来有什么不同 |
+| What you get | What it means in practice |
 | --- | --- |
-| 🧠 **给 Agent 一份说明书，也给它工具** | `SKILL.md` 配套可执行脚本和 JSON 接口，能查服务器，也能通过 SSH 执行操作。 |
-| 📁 **一个项目，一本账** | 服务器、环境、代码位置和产物关联按项目保存，同名记录互不覆盖。 |
-| 🔌 **接着用你的 SSH** | 复用已有 alias、密钥和跳板机；服务器无需安装本项目的常驻程序。 |
-| 🛠️ **服务器杂活有统一入口** | 读代码、查 Git、打补丁、预览同步、取回文件、读日志，减少临时拼接脚本。 |
-| 👀 **Agent 能用，你也看得懂** | CLI、网页、VS Code 共用操作接口；网页关闭后，Skill 和脚本仍可独立使用。 |
-| 🪶 **从一个项目就能开始** | 本地 SQLite 台账，Python 核心只用标准库；先登记一台机器，按需增加能力。 |
+| 🧠 **Instructions and tools for your agent** | `SKILL.md` comes with executable scripts and JSON interfaces. Agents can inspect servers and perform operations over SSH. |
+| 📁 **One project, one inventory** | Server records, environments, code locations, and artifacts stay with their project. Identical record IDs in different projects don't collide. |
+| 🔌 **Bring your existing SSH setup** | Reuse aliases, keys, and jump hosts. Servers need no ComputeMate daemon. |
+| 🛠️ **A common entry point for everyday work** | Read code, inspect Git, apply patches, preview syncs, retrieve files, and read logs with fewer one-off scripts. |
+| 👀 **Useful to agents. Visible to you.** | CLI, web, and VS Code share the same operations. The Skill and scripts work independently of the webpage. |
+| 🪶 **Start with a single server** | Local SQLite inventory; a Python core using only the standard library. Register one machine and add capabilities as you need them. |
 
-## 交给 Agent
+## Ask your agent
 
-让支持读取 Skill、调用 Shell 的 Agent 加载 [ComputeMate Skill](skills/cloud-servers/SKILL.md)，然后像这样提需求：
+Have an agent that can read Skills and run shell commands load the [ComputeMate Skill](skills/cloud-servers/SKILL.md). Then try requests like:
 
-> “看看当前项目有哪些可连接的 GPU 服务器，按显存情况列出候选，再告诉我依据。”
+> "Check which GPU servers in this project are reachable. List candidates by available GPU memory and explain your choices."
 
-> “去 gpu01 检查训练代码，只读入口文件前 80 行，核对 Git 状态，再准备补丁。”
+> "Inspect the training code on gpu01. Read just the first 80 lines of the entry file, check Git status, then prepare a patch."
 
-> “预览这次代码同步的差异。同步完成后，用已有环境启动指定的 tmux 命令，告诉我会话名和日志路径。”
+> "Preview the code sync. After syncing, launch the specified command in tmux using the existing environment. Give me the session name and log path."
 
-> “提交这份 Slurm 脚本，保留原生 Job ID，查一下队列和输出日志。”
+> "Submit this Slurm script, keep the native Job ID, and check the queue and output log."
 
-以上是**请求示例**。实际操作取决于你登记的路径、已有环境、权限和目标机器能力；实验步骤由 Agent 结合项目要求组织。
+These are **example requests**. Actual operations depend on registered paths, existing environments, permissions, and the target machine's capabilities. The agent organizes experiment steps around your project requirements.
 
-## 快速开始
+## Quick start
 
-客户端需要 **Python 3.11+、OpenSSH**。文件同步使用 `rsync`；Git、tmux、Slurm 按实际功能使用。远端以 Linux/Bash 为基础，macOS 和 Linux 可作客户端，Windows 使用 WSL。
+The client needs **Python 3.11+ and OpenSSH**. File sync uses `rsync`; Git, tmux, and Slurm are needed for their respective operations. Remote hosts use Linux and Bash. Use macOS or Linux as the client, or WSL on Windows.
 
-### 1. 获取代码，安装命令
+### 1. Get the code and install the CLI
 
 ```bash
 git clone https://github.com/FishAndWasabi/ComputeMate.git
@@ -66,9 +68,9 @@ cd ComputeMate
 uv tool install .
 ```
 
-上面的命令适用于已安装 `uv` 的用户。提示找不到 `computemate` 时，运行 `uv tool update-shell` 后重新打开终端。
+This assumes `uv` is installed. If your shell cannot find `computemate`, run `uv tool update-shell` and open a new terminal.
 
-没有 `uv`，也可以用 Python 自带的虚拟环境安装：
+Without `uv`, use Python's built-in virtual environment:
 
 ```bash
 python3 -m venv .venv
@@ -76,32 +78,33 @@ source .venv/bin/activate
 python3 -m pip install .
 ```
 
-不安装 CLI 时，直接调用 `python3 skills/cloud-servers/scripts/computemate.py --help`。
+You can also skip CLI installation and run `python3 skills/cloud-servers/scripts/computemate.py --help` directly.
 
-### 2. 给你的实验项目建一本账
+### 2. Give your experiment its own inventory
 
-在**实际实验项目目录**运行；下面的 `lab-gpu` 请替换为你能正常连接的 SSH alias。
-首次使用该连接时，先在同一台客户端运行 `ssh lab-gpu`，完成主机指纹确认和认证，再退出 SSH 回到本地。ComputeMate 使用非交互连接，不会弹出密码或指纹确认提示。
+Run these commands in **your actual experiment project**. Replace `lab-gpu` with an SSH alias you can connect to.
+
+For a first connection, run `ssh lab-gpu` from the same client to verify the host fingerprint and authentication, then exit back to your local shell. ComputeMate uses non-interactive SSH and does not prompt for passwords or host verification.
 
 ```bash
 cd /path/to/your/experiment
 computemate init
 computemate server add --id gpu01 \
-  --data '{"name":"实验节点","ssh":{"alias":"lab-gpu"},"role":"compute"}'
+  --data '{"name":"Experiment node","ssh":{"alias":"lab-gpu"},"role":"compute"}'
 computemate probe gpu01
 computemate server list
 ```
 
-台账保存到该项目的 `.cloud-servers/`。从其他目录操作时，显式指定项目：
+The inventory lives in the project's `.cloud-servers/` directory. To work from elsewhere, select the project explicitly:
 
 ```bash
 computemate --workspace /path/to/your/experiment --json snapshot
 ```
 
 <details>
-<summary>暂时没有服务器？先用示例台账体验</summary>
+<summary>No server handy? Try the sample inventory</summary>
 
-从 ComputeMate 仓库运行以下命令。它只导入演示记录，不连接服务器：
+Run this from the ComputeMate repository. It imports demo records without connecting to any servers:
 
 ```bash
 mkdir -p /tmp/computemate-demo
@@ -110,29 +113,29 @@ computemate --workspace /tmp/computemate-demo inventory import --document-file e
 computemate --workspace /tmp/computemate-demo server list
 ```
 
-构建网页后，将下面网页启动命令中的项目路径替换为 `/tmp/computemate-demo`。示例 SSH 地址不可连接，换成自己的连接后再刷新。
+After building the webpage, use `/tmp/computemate-demo` as the project path in the launch command below. The sample SSH destinations are placeholders; replace them with your own connections before refreshing.
 
 </details>
 
-### 3. 把 Skill 接给 Agent
+### 3. Connect the Skill to your agent
 
-从本仓库运行，将完整 Skill 复制到你的 Agent 支持的目录：
+From this repository, copy the complete Skill into a directory your agent supports:
 
 ```bash
 python3 scripts/package-skill.py --install-to /path/to/agent/skills
 ```
 
-也可以让 Agent 直接读取仓库中的 [SKILL.md](skills/cloud-servers/SKILL.md)，使用其相对路径下的脚本。自动发现规则由 Agent 宿主决定，公共脚本不依赖特定 Agent 工具名。
+Alternatively, have your agent read [SKILL.md](skills/cloud-servers/SKILL.md) in the repository and use its scripts by relative path. Skill discovery depends on the agent host; the public scripts do not depend on any particular agent's tool names.
 
-## 想自己看，也很方便
+## See what's going on
 
-| 入口 | 适合什么时候用 |
+| Interface | When to use it |
 | --- | --- |
-| **CLI** | 快速查询和脚本调用；人看文本，Agent 用 `--json`。 |
-| **本地网页** | 看服务器分组、GPU 状态、环境和产物；点开详情再操作。 |
-| **VS Code** | 在项目工作区里看同一份台账；多项目分别绑定，Webview 无需另开网页服务。 |
+| **CLI** | Quick lookups and scripting. Readable text for people, `--json` for agents. |
+| **Local webpage** | Browse server groups, GPU status, environments, and artifacts. Open a server's details to take action. |
+| **VS Code** | View the same inventory inside your project workspace. Each project has its own binding; the Webview needs no web server. |
 
-网页首次使用需要构建前端，以下命令从 ComputeMate 仓库运行（Node.js 20.19+）：
+Build the frontend before using the webpage for the first time. Run from the ComputeMate repository with Node.js 20.19+:
 
 ```bash
 npm ci
@@ -141,57 +144,59 @@ python3 skills/cloud-servers/scripts/computemate.py \
   --workspace /path/to/your/experiment serve
 ```
 
-打开终端输出的本机 URL。默认读取最近记录，点击刷新才重新探测；自动刷新可以手动开启。
-如果端口被占用，在 `serve` 后加 `--port 0` 自动选择空闲端口。每个项目启动自己的网页，页面顶部显示绑定的项目名称。
+Open the local URL printed in the terminal. The page shows the latest saved observations by default. Refresh to probe servers again; automatic refresh is optional.
 
-若想使用安装后的 `computemate serve`，请在构建完成后从仓库重新运行 `uv tool install --reinstall .`；使用虚拟环境安装的用户运行 `python3 -m pip install --force-reinstall .`。上面的独立脚本始终读取仓库内最新构建。
+If the port is occupied, add `--port 0` after `serve` to select a free port. Launch a separate page for each project; the header shows which project it belongs to.
 
-VS Code 扩展运行 `npm run package:vscode` 构建，在编辑器中通过 **Install from VSIX** 安装 `extensions/vscode/computemate-0.1.0.vsix`。打开项目文件夹后，在 ComputeMate 活动栏点击“初始化此项目的台账”即可开始。
+To use the installed `computemate serve` command, reinstall after building: run `uv tool install --reinstall .` from the repository, or `python3 -m pip install --force-reinstall .` in your virtual environment. The standalone script above reads the repository's latest build directly.
 
-## 从找机器，到拿回结果
+Build the VS Code extension with `npm run package:vscode`, then use **Install from VSIX** to install `extensions/vscode/computemate-0.1.0.vsix`. Open your project folder and click **初始化此项目的台账** (Initialize this project's inventory) in the ComputeMate activity bar.
+
+## From finding a machine to collecting results
 
 ```text
-你 / Agent
+You / Agent
     │
     ▼
-ComputeMate Skill + 公共脚本
+ComputeMate Skill + public scripts
     │
-    ├── 项目台账：服务器 · 环境 · 代码路径 · 产物
-    ├── SSH / rsync：查询 · 执行 · 代码访问 · 文件传输
-    └── tmux / Slurm：原生会话 · Job ID · 状态 · 日志
+    ├── Project inventory: servers · environments · code paths · artifacts
+    ├── SSH / rsync: queries · execution · code access · file transfers
+    └── tmux / Slurm: native sessions · Job IDs · status · logs
 ```
 
-| 你要做的事 | ComputeMate 提供的接口 |
+| What you need | ComputeMate interfaces |
 | --- | --- |
-| 看机器、看 GPU、找候选 | `server` / `probe` / `capabilities` |
-| 找代码、读文件、检查 Git、应用补丁 | `project` / `fs` |
-| 发现、登记和使用已有环境 | `environment` / `exec` |
-| 预览增量同步、上传或取回文件 | `sync` / `transfer` |
-| 启动后台会话、提交作业、读取日志 | `tmux` / `slurm` |
-| 记录权重、checkpoint、指标与日志位置 | `artifact` |
+| Inspect machines and GPUs, find candidates | `server` / `probe` / `capabilities` |
+| Locate code, read files, inspect Git, apply patches | `project` / `fs` |
+| Discover, register, and use existing environments | `environment` / `exec` |
+| Preview incremental sync, upload, or retrieve files | `sync` / `transfer` |
+| Start background sessions, submit jobs, read logs | `tmux` / `slurm` |
+| Record weights, checkpoints, metrics, and log locations | `artifact` |
 
-常用的一条命令：
+A useful first command:
 
 ```bash
-# 让 Agent 先了解“这里有什么能力”
+# Let your agent discover the available operations.
 computemate --json operations
 ```
 
-更多可复制命令见 [使用指南](docs/usage.md)，接口细节见 [Skill 参考文档](skills/cloud-servers/references/interfaces.md)。
+Find more commands in the [usage guide (中文)](docs/usage.md), or read the [Skill interface reference](skills/cloud-servers/references/interfaces.md) for API details.
 
-## 用之前，知道这几件事就够了
+## A few things to know
 
-- 项目隔离的是**台账和关联信息**，物理 GPU 仍然共享；候选筛选不等于资源预留。
-- 训练流程、依赖安装和环境创建由你或 Agent 组织；ComputeMate 提供服务器工具，不自动决定实验方案。
-- 保留原生 tmux 会话名和 Slurm Job ID。提交结果不确定时会明确返回，避免盲目重复执行。
-- 同步默认预览，保留目的端额外文件；删除服务器记录采用归档，不删除远端数据。
-- 资源记录带采集时间。连接失败保留最近结果并标记状态，缓存不会伪装成实时数据。
+- Projects isolate **inventory records and their relationships**. Physical GPUs are still shared; candidate selection does not reserve resources.
+- You or your agent organize training workflows, dependency installation, and environment creation. ComputeMate provides the server tools.
+- tmux session names and Slurm Job IDs keep their native meaning. Uncertain execution or submission results are reported explicitly so you can inspect before retrying.
+- Sync previews changes by default and preserves extra files at the destination. Removing a server archives its inventory record; it does not delete remote data.
+- Resource records include observation timestamps. Failed connections retain the last results and flag their status, so cached data is distinguishable from fresh observations.
 
-当前已完成核心接口、真实回环 SSH、tmux、网页和 VS Code 宿主验证，并有 Linux GPU 服务器实机试用。Slurm 目前使用样例/模拟验证，真实集群联调范围见 [验证记录](VALIDATION.md)。
-安装与三端上手体验的检查结果见 [首次使用检查](docs/usability-review.md)。
+Validation covers core interfaces, real loopback SSH, tmux, the webpage, and a real VS Code extension host, with additional trials on Linux GPU servers. Slurm currently uses fixtures and simulated responses; see the [validation record (中文)](VALIDATION.md) for the scope of real-cluster testing.
 
-## 一起把服务器杂活变少
+See the [first-use review (中文)](docs/usability-review.md) for installation and interface checks.
 
-欢迎用自己的实验场景来提 [Issue](https://github.com/FishAndWasabi/ComputeMate/issues)：多机训练、论文复现、测评、共享实验室服务器，都可以。
+## Help make server chores smaller
 
-如果 ComputeMate 刚好替你省下一次“那个权重到底在哪”的搜索，欢迎点个 **Star ⭐**，也分享给还在终端标签页里找机器的朋友。
+Bring your own experiment to the [issue tracker](https://github.com/FishAndWasabi/ComputeMate/issues): training across machines, paper reproduction, evaluation, or shared lab servers.
+
+If ComputeMate saves you even one "where did that checkpoint go?" search, give it a **Star ⭐** and share it with a friend still hunting through terminal tabs.
