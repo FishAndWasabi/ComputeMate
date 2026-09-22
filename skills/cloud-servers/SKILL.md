@@ -18,7 +18,7 @@ python3 <skill-directory>/scripts/computemate.py --json snapshot
 python3 <skill-directory>/scripts/computemate.py --json operations
 ```
 
-If installed as a Python package, `computemate` is equivalent (`cloud-servers` remains a compatible alias). The Skill implementation may be shared, but every project has its own inventory. Initialize the intended project once:
+If installed as a Python package, use the `computemate` command. The Skill implementation may be shared, but every project has its own inventory. Initialize the intended project once:
 
 ```bash
 computemate init /path/to/project

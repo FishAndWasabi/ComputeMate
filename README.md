@@ -195,10 +195,3 @@ computemate --json operations
 欢迎用自己的实验场景来提 [Issue](https://github.com/FishAndWasabi/ComputeMate/issues)：多机训练、论文复现、测评、共享实验室服务器，都可以。
 
 如果 ComputeMate 刚好替你省下一次“那个权重到底在哪”的搜索，欢迎点个 **Star ⭐**，也分享给还在终端标签页里找机器的朋友。
-
-<details>
-<summary>已有用户：更名后怎么兼容？</summary>
-
-对外名称统一为 **ComputeMate（算力管家）**，首选命令为 `computemate`。旧 `cloud-servers` 命令、`cloud_servers.py` 脚本、Skill 标识 `cloud-servers`、项目 `.cloud-servers/` 数据目录及 VS Code 的 `cloudServers.*` 设置继续可用；现有台账无需迁移。
-
-</details>

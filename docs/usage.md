@@ -41,7 +41,7 @@ computemate --json exec gpu01 --cwd /workspace/model -- python train.py --help
 
 Skill 和脚本可以共用，每个项目的台账独立存于 `.cloud-servers/inventory.sqlite3`，项目标识存于 `.cloud-servers/config.json`。从项目及子目录运行时自动识别绑定，并在 Git 仓库／worktree 边界停止查找；未初始化的项目不会默认读取全局台账。同名服务器、环境和实验记录在不同项目间互不覆盖。
 
-从其他目录调用使用 `--workspace /path/to/project`。`--db PATH` 为显式台账覆盖，不能与 `--workspace` 同用；`CLOUD_SERVERS_DB` 仅在没有显式或自动识别的项目绑定时生效。旧版用户台账仍可通过 `--db ~/.local/share/cloud-servers/inventory.sqlite3` 显式读取，迁移时只导入目标项目相关记录。共享 GPU 的实际占用仍通过 SSH／调度器查询。
+从其他目录调用使用 `--workspace /path/to/project`。`--db PATH` 为显式台账覆盖，不能与 `--workspace` 同用；`CLOUD_SERVERS_DB` 仅在没有显式或自动识别的项目绑定时生效。共享 GPU 的实际占用仍通过 SSH／调度器查询。
 
 示例导入不会自动连接服务器：
 
@@ -154,7 +154,3 @@ python3 scripts/package-skill.py
 测试包括事务与并发修改、缓存、JSON/CLI 契约、HTTP 鉴权、输出限制、Slurm 样例解析；具备本地 sshd 时还会启动隔离的回环 SSH 服务，使用临时密钥验证真实 SSH、rsync、Git 补丁与 tmux。测试不修改 `~/.ssh`，tmux 使用独立临时 socket 目录。缺少 sshd 或相应工具时集成用例会明确跳过。
 
 Slurm 的真实集群联调需要可访问的测试集群；当前样例/模拟测试不能替代站点验证。具体交付验证记录见 [VALIDATION.md](../VALIDATION.md)。
-
-## 名称与兼容性
-
-对外名称为 **ComputeMate（算力管家）**，首选命令是 `computemate`。`cloud-servers` 命令、`cloud_servers.py` 脚本、`cloud-servers` Skill 标识、`.cloud-servers/` 台账及 VS Code 的 `cloudServers.*` 设置保留兼容，无需迁移项目记录。新的发布包为 `computemate-skill.zip`、`computemate-0.1.0-py3-none-any.whl` 和 `computemate-0.1.0.vsix`。

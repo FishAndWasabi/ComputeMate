@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ComputeMate standalone CLI; the cloud_servers.py entry remains compatible."""
+"""ComputeMate standalone CLI."""
 
 from cloud_servers.cli import main
 
