@@ -4,6 +4,7 @@ import argparse
 import json
 import sys
 import time
+import unicodedata
 from pathlib import Path
 
 from .api import REGISTRY, invoke
@@ -36,6 +37,8 @@ def show(data):
                 "role": s.get("role", "general"),
                 "status": "unobserved"
                 if not s.get("observations", {}).get("hardware")
+                else "connection_failed"
+                if s["observations"]["hardware"].get("error")
                 else "stale"
                 if s["observations"]["hardware"]["stale"]
                 else "observed",
@@ -71,17 +74,27 @@ def show(data):
             [str(r.get(c, ""))[:90].replace("\n", " ") for c in columns] for r in rows
         ]
         widths = [
-            max(len(c), *(len(row[i]) for row in display))
+            max(display_width(c), *(display_width(row[i]) for row in display))
             for i, c in enumerate(columns)
         ]
-        print("  ".join(c.upper().ljust(widths[i]) for i, c in enumerate(columns)))
+        def pad(value, width):
+            return value + " " * (width - display_width(value))
+
+        print("  ".join(pad(c.upper(), widths[i]) for i, c in enumerate(columns)))
         print("  ".join("─" * n for n in widths))
         for row in display:
-            print("  ".join(v.ljust(widths[i]) for i, v in enumerate(row)))
+            print("  ".join(pad(v, widths[i]) for i, v in enumerate(row)))
         if "total" in data:
             print(f"\n{len(rows)} of {data['total']} results")
         return
     print(json_text(data))
+
+
+def display_width(value):
+    return sum(
+        0 if unicodedata.combining(char) else 2 if unicodedata.east_asian_width(char) in {"W", "F"} else 1
+        for char in value
+    )
 
 
 def build_parser():
@@ -179,7 +192,12 @@ def main(argv=None):
             if options.workspace and parsed["path"]:
                 raise Failure("invalid_argument", "Choose the init path either positionally or with --workspace, not both")
             value = initialize(parsed["path"] or options.workspace or ".", parsed["name"])
-            print(json_text(envelope(value)) if json_mode else json_text(value))
+            if json_mode:
+                print(json_text(envelope(value)))
+            else:
+                print(f"Project {'initialized' if value['created'] else 'already initialized'}: {value['name']}")
+                print(f"Inventory: {value['database']}")
+                print("Next: register your first server with 'computemate server add --help'.")
             return
         if action == "serve":
             from .web import serve

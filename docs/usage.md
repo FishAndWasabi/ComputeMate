@@ -69,7 +69,9 @@ npm run build
 computemate --workspace /path/to/project serve
 ```
 
-若 CLI 是在构建前安装的非 editable 副本，请重新安装包；也可直接运行仓库内的独立脚本 `python3 skills/cloud-servers/scripts/computemate.py serve`。
+若 CLI 是在构建前安装的副本，从仓库运行 `uv tool install --reinstall .`，或在自己的虚拟环境中运行 `python3 -m pip install --force-reinstall .`。也可直接运行仓库内的独立脚本 `python3 skills/cloud-servers/scripts/computemate.py --workspace /path/to/project serve`。尚未构建时，启动命令会提示构建及重新安装步骤，不会输出无法使用的网页链接。
+
+同一台机器上开启多个项目的网页时，使用 `serve --port 0` 自动选择空闲端口，或指定 `--port 8766` 等不同端口。分别打开各次启动输出的完整 URL。
 
 打开终端输出的完整 URL（包含 token）。网页只监听 `127.0.0.1`。默认读取缓存；“刷新状态”才连接远端，自动刷新可按需开启。首页仅展示服务器列表，支持搜索与分组筛选；点击服务器，在侧边详情中查看资源、环境、项目、会话与产物。“更多操作”提供全部公共操作，表单中的次要参数默认折叠。网页与 VS Code 共用这套界面和校验。
 
@@ -114,6 +116,20 @@ computemate inventory import --document-file inventory.json --overwrite
 
 普通调用提供表格或文本；`--json` 提供版本化结果。每个命令支持 `--help`，大文本可用 `--script-file`、`--patch-file`、`--data-file` 等读取文件。`rpc` 从 stdin 读取一条 `{operation, arguments}` 请求并返回同一格式，供其他宿主集成。
 
+`probe` 返回探测记录：接口成功返回不代表连接成功，应检查 `data.reachable` 以及 `observations` 中的错误。CLI 快照用 `connection_failed` 区分连接异常与单纯过期，网页直接展示 SSH 原因。命令执行失败会展示 stdout、stderr 和退出码；结果不确定时先查原生状态。同步预览明确显示“尚未传输文件”。网页中的修改操作成功后会禁用重复提交，修改参数或重新打开表单后才能再次提交。
+
+## 首次使用排障
+
+| 遇到的问题 | 下一步 |
+| --- | --- |
+| `computemate: command not found` | 使用 uv 安装时运行 `uv tool update-shell` 并重开终端；虚拟环境安装时先激活环境。 |
+| `workspace_not_initialized` | 在实际实验项目运行 `computemate init`，或在命令中指定已经初始化的 `--workspace`。 |
+| `web_assets_missing` | 从仓库构建网页，再使用独立脚本启动，或重新安装 CLI。 |
+| `port_in_use` | 使用 `serve --port 0`，从终端获取新 URL。 |
+| 网页令牌过期 | 重新打开当前服务启动时输出的完整 URL，包含 `#token=…`。服务重启后旧令牌失效。 |
+| SSH 连接失败 | 从运行 ComputeMate 的主机手动 `ssh` 到相同地址，核对密钥、跳板机、端口和主机指纹。 |
+| VS Code 无法启动 Python | 在设置中将 `cloudServers.pythonPath` 指向 Python 3.11+；Remote SSH 时设置远端路径。 |
+
 HTTP 适配层只提供 `/api/v1/operations`、`/api/v1/snapshot` 和 `/api/v1/invoke`，校验 Bearer token、Host 与浏览器 Origin。Skill 和 CLI 无需启动它。
 
 ## 行为边界
@@ -130,6 +146,7 @@ HTTP 适配层只提供 `/api/v1/operations`、`/api/v1/snapshot` 和 `/api/v1/i
 
 ```bash
 python3 -m unittest discover -s tests -v
+npm run test:ui
 npm run build
 python3 scripts/package-skill.py
 ```

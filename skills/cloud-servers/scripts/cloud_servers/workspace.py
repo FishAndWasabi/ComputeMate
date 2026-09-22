@@ -21,7 +21,7 @@ def read_config(root: Path) -> dict:
     except FileNotFoundError as exc:
         raise Failure(
             "workspace_not_initialized",
-            f"Project is not initialized: {root}. Run cloud-servers init in that project.",
+            f"Project is not initialized: {root}. Run computemate init in that project.",
         ) from exc
     except (ValueError, OSError) as exc:
         raise Failure(
@@ -69,7 +69,7 @@ def resolve_db(db=None, workspace=None, *, cwd=None, environ=None) -> Path:
         return resolve_db(env["CLOUD_SERVERS_DB"], cwd=cwd, environ={})
     raise Failure(
         "workspace_not_initialized",
-        "No project inventory is bound. Run cloud-servers init in the project, or pass --workspace PATH / --db PATH explicitly.",
+        "No project inventory is bound. Run computemate init in the project, or pass --workspace PATH / --db PATH explicitly.",
     )
 
 

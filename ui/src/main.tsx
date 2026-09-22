@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import { invoke, setToken, type Envelope } from "./bridge";
+import { presentResult, statusOf } from "./presentation";
 import "./style.css";
 
 type Field = {
@@ -180,16 +181,6 @@ function actionName(name: string) {
     `${({ add: "添加", update: "编辑", get: "查看", remove: "归档", list: "查询" } as Row)[verb] || ""}${categories[kind] || name}`
   );
 }
-function statusOf(server: Row) {
-  const observation = server.observations?.hardware;
-  return observation?.error
-    ? "连接异常"
-    : observation?.stale
-      ? "已过期"
-      : observation
-        ? "可达"
-        : "未探测";
-}
 function Status({ server }: { server: Row }) {
   const status = statusOf(server);
   return (
@@ -256,19 +247,23 @@ function Result({
   mutating: boolean;
 }) {
   if (!value) return null;
-  const data = value.data as Row;
+  const { failed, data, title, message, guidance } = presentResult(value);
   return (
-    <div className={"result " + (value.ok ? "" : "failed")} role="status">
-      <strong>{value.ok ? "操作完成" : "操作未完成"}</strong>
-      {!value.ok && <p>{value.error?.message}</p>}
-      {value.ok && data?.stdout !== undefined ? (
+    <div className={"result " + (failed ? "failed" : "")} role="status">
+      <strong>{title}</strong>
+      {message && <p>{message}</p>}
+      {guidance && <p>{guidance}</p>}
+      {data?.stdout !== undefined && (!failed || data.stdout) ? (
         <pre>{data.stdout || "（无输出）"}</pre>
-      ) : value.ok && mutating && data?.name && data?.id ? (
+      ) : !failed && data?.content !== undefined ? (
+        <pre>{data.content || "（空文件）"}</pre>
+      ) : !failed && mutating && data?.name && data?.id ? (
         <p>已保存：{data.name}</p>
       ) : (
-        value.ok && <pre>{JSON.stringify(data, null, 2)}</pre>
+        !failed && <pre>{JSON.stringify(data, null, 2)}</pre>
       )}
       {data?.stderr && <pre className="stderr">{data.stderr}</pre>}
+      {failed && data?.exit_code != null && <p>退出码：{data.exit_code}</p>}
       {data?.truncated && <p>输出已截断，可缩小查询范围或增加输出上限。</p>}
       <details>
         <summary>原始结果</summary>
@@ -311,7 +306,9 @@ function App() {
       const r = await invoke<Snapshot>("snapshot", { refresh, limit: 1000 });
       if (!r.ok) {
         setUnauthorized(r.error?.code === "unauthorized");
-        setMessage(r.error?.message || "读取失败");
+        setMessage(r.error?.code === "unauthorized"
+          ? "访问令牌无效或已过期。请重新打开启动命令输出的完整链接，或在下方填写令牌。"
+          : r.error?.message || "读取失败");
       } else {
         setSnapshot(r.data);
         setUnauthorized(false);
@@ -394,11 +391,15 @@ function App() {
         for (const [key, f] of Object.entries(active.fields)) {
           const value = fields[key];
           if (value === "" || value == null) continue;
-          args[key] = ["object", "array"].includes(f.type)
-            ? JSON.parse(value)
-            : f.type === "integer"
-              ? Number(value)
-              : value;
+          if (["object", "array"].includes(f.type)) {
+            try {
+              args[key] = JSON.parse(value);
+            } catch {
+              throw new Error(`${labels[key] || key}需要有效的 JSON，请检查双引号、逗号和括号。`);
+            }
+          } else {
+            args[key] = f.type === "integer" ? Number(value) : value;
+          }
         }
       }
       const r = await invoke(active.name, args);
@@ -541,7 +542,7 @@ function App() {
             </small>
           )}
         </span>
-        <button className="quiet" onClick={() => setShowTools(true)}>
+        <button className="quiet" disabled={!operations.length || unauthorized} onClick={() => setShowTools(true)}>
           更多操作
         </button>
       </header>
@@ -557,7 +558,7 @@ function App() {
             >
               {refreshing ? "刷新中…" : "刷新状态"}
             </button>
-            <button className="primary" onClick={() => open("server.add")}>
+            <button className="primary" disabled={!snapshot.workspace || unauthorized} onClick={() => open("server.add")}>
               添加服务器
             </button>
           </div>
@@ -611,6 +612,12 @@ function App() {
         <div className="fleet">
           {!initialized ? (
             <div className="empty-state">正在读取…</div>
+          ) : message && !snapshot.workspace ? (
+            <div className="empty-state">
+              <h2>暂时无法读取台账</h2>
+              <p>连接成功后会显示当前项目的服务器。</p>
+              {!unauthorized && <button onClick={() => void initialize()}>重新连接</button>}
+            </div>
           ) : servers.length ? (
             <div className="table-wrap">
               <table>
@@ -795,7 +802,10 @@ function App() {
                   </button>
                 </div>
                 {sample?.error && (
-                  <p className="notice">{sample.error.message}</p>
+                  <div className="notice">
+                    <p>{sample.error.message}</p>
+                    {sample.error.details?.stderr && <pre>{sample.error.details.stderr}</pre>}
+                  </div>
                 )}
                 <dl className="facts">
                   <div>
@@ -1008,7 +1018,7 @@ function App() {
             </button>
           </div>
           <form onSubmit={run}>
-            <fieldset disabled={busy}>
+            <fieldset disabled={busy} onChange={() => setOutput(null)}>
               {active.name === "server.add" && !rawServer ? (
                 <>
                   <div className="form-fields">
@@ -1117,10 +1127,12 @@ function App() {
                 <button type="button" onClick={() => setActive(null)}>
                   关闭
                 </button>
-                <button className="primary">
+                <button className="primary" disabled={Boolean(output?.ok && active.mutating)}>
                   {busy
                     ? "执行中…"
-                    : active.name.endsWith(".add") ||
+                    : output?.ok && active.mutating
+                      ? "已完成"
+                      : active.name.endsWith(".add") ||
                         active.name.endsWith(".update")
                       ? "保存"
                       : active.mutating

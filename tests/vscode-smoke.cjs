@@ -30,6 +30,21 @@ exports.run = async function () {
   }
   assert(records.filter(r => r.operation === 'operations').length >= 4);
   assert(!await fs.stat(path.join(root, 'wrong-global.sqlite3')).catch(() => null), 'Inherited global DB is never touched');
-  await fs.writeFile(path.join(root, 'result.json'), JSON.stringify({activated: true, webviewRpc: true, projectIsolation: true, projects: records.filter(r => r.operation === 'snapshot').map(r => r.scope.name)}));
+  const fresh = vscode.workspace.workspaceFolders.find(f => f.name === 'Project-New');
+  assert(vscode.workspace.isTrusted, 'Generated fixture workspace must be trusted for initialization');
+  assert(!await fs.stat(path.join(fresh.uri.fsPath, '.cloud-servers/config.json')).catch(() => null));
+  await vscode.commands.executeCommand('cloudServers.initialize', fresh.uri);
+  const initialized = JSON.parse(await fs.readFile(path.join(fresh.uri.fsPath, '.cloud-servers/config.json'), 'utf8'));
+  assert.equal(initialized.name, 'Project-New');
+  let newSnapshot;
+  for (let i = 0; i < 200; i++) {
+    records = (await fs.readFile(path.join(root, 'requests.jsonl'), 'utf8')).trim().split('\n').filter(Boolean).map(JSON.parse);
+    newSnapshot = records.find(r => r.operation === 'snapshot' && r.scope?.name === 'Project-New');
+    if (newSnapshot) break;
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  assert(newSnapshot?.ok, 'First initialization opens a functioning workbench');
+  assert.deepEqual(newSnapshot.servers, []);
+  await fs.writeFile(path.join(root, 'result.json'), JSON.stringify({activated: true, webviewRpc: true, projectIsolation: true, firstRunInitialization: true, projects: records.filter(r => r.operation === 'snapshot').map(r => r.scope.name)}));
   await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 };

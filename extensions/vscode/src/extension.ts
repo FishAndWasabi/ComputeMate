@@ -56,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
     if (!scope.root && !scope.db && operation !== "operations")
       return Promise.resolve(
         failure(
-          "Open a project folder or explicitly configure its databasePath.",
+          "请先打开项目文件夹，或在设置中指定 cloudServers.databasePath。",
         ),
       );
     const python = scope.python;
@@ -119,7 +119,9 @@ export function activate(context: vscode.ExtensionContext) {
       child.stderr.on("data", (chunk: Buffer) => {
         stderr = (stderr + chunk.toString()).slice(-65536);
       });
-      child.on("error", (error) => finish(failure(error.message)));
+      child.on("error", (error) => finish(failure(
+        `无法启动 Python（${python}）。请安装 Python 3.11+，并检查 cloudServers.pythonPath 设置。${error.message}`,
+      )));
       child.on("close", () => {
         try {
           finish(JSON.parse(stdout));
@@ -161,12 +163,19 @@ export function activate(context: vscode.ExtensionContext) {
         ? vscode.workspace.getWorkspaceFolder(parent.resourceUri)
         : folders[0];
       const response = await run("snapshot", { limit: 1000 }, binding(folder));
-      if (!response.ok)
-        return [
-          new vscode.TreeItem(
-            response.error?.message || "Unable to load inventory",
-          ),
-        ];
+      if (!response.ok) {
+        if (response.error?.code === "workspace_not_initialized" && folder) {
+          const item = new vscode.TreeItem("初始化此项目的台账");
+          item.iconPath = new vscode.ThemeIcon("add");
+          item.command = {
+            command: "cloudServers.initialize",
+            title: "初始化项目台账",
+            arguments: [folder.uri],
+          };
+          return [item];
+        }
+        return [new vscode.TreeItem(response.error?.message || "无法读取台账")];
+      }
       if (!response.data.servers.length) {
         const item = new vscode.TreeItem("添加第一台服务器");
         item.command = {
@@ -199,6 +208,19 @@ export function activate(context: vscode.ExtensionContext) {
     const folder = await chooseFolder(resource);
     if (!folder && (vscode.workspace.workspaceFolders?.length || 0) > 1) return;
     const selected = binding(folder);
+    const scope = await run("scope", {}, selected);
+    if (!scope.ok) {
+      if (scope.error?.code === "workspace_not_initialized" && folder) {
+        const action = await vscode.window.showInformationMessage(
+          `项目 ${folder.name} 还没有台账。初始化后即可添加服务器。`,
+          "初始化项目台账",
+        );
+        if (action) await initialize(folder.uri);
+      } else {
+        vscode.window.showErrorMessage(scope.error?.message || "无法读取项目台账");
+      }
+      return;
+    }
     const key = JSON.stringify(selected);
     if (panel && panelBinding === key) {
       panel.reveal();
@@ -281,29 +303,30 @@ export function activate(context: vscode.ExtensionContext) {
     }
   }
 
+  async function initialize(resource?: vscode.Uri) {
+    if (!vscode.workspace.isTrusted) {
+      vscode.window.showErrorMessage("请先信任此 VS Code 工作区，再初始化项目台账。");
+      return;
+    }
+    const folder = await chooseFolder(resource);
+    if (!folder) {
+      if (!vscode.workspace.workspaceFolders?.length)
+        vscode.window.showInformationMessage("请先在 VS Code 中打开需要管理服务器的项目文件夹。");
+      return;
+    }
+    const selected = { ...binding(folder), db: undefined };
+    const result = await run("init", {}, selected);
+    if (!result.ok)
+      vscode.window.showErrorMessage(result.error?.message || "初始化失败");
+    else {
+      panel?.dispose();
+      inventory.refresh();
+      await open(folder.uri);
+    }
+  }
   context.subscriptions.push(
     vscode.commands.registerCommand("cloudServers.open", open),
-    vscode.commands.registerCommand("cloudServers.initialize", async () => {
-      if (!vscode.workspace.isTrusted) {
-        vscode.window.showErrorMessage(
-          "Trust this workspace before initializing its inventory.",
-        );
-        return;
-      }
-      const folder = await chooseFolder();
-      if (!folder) return;
-      const selected = { ...binding(folder), db: undefined };
-      const result = await run("init", {}, selected);
-      if (!result.ok)
-        vscode.window.showErrorMessage(
-          result.error?.message || "Initialization failed",
-        );
-      else {
-        panel?.dispose();
-        inventory.refresh();
-        await open(folder.uri);
-      }
-    }),
+    vscode.commands.registerCommand("cloudServers.initialize", initialize),
   );
   context.subscriptions.push(
     vscode.commands.registerCommand("cloudServers.refresh", () =>

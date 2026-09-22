@@ -66,11 +66,22 @@ cd ComputeMate
 uv tool install .
 ```
 
-也可在自己的 Python 虚拟环境中运行 `python3 -m pip install .`。不安装 CLI 时，直接调用 `python3 skills/cloud-servers/scripts/computemate.py --help`。
+上面的命令适用于已安装 `uv` 的用户。提示找不到 `computemate` 时，运行 `uv tool update-shell` 后重新打开终端。
+
+没有 `uv`，也可以用 Python 自带的虚拟环境安装：
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install .
+```
+
+不安装 CLI 时，直接调用 `python3 skills/cloud-servers/scripts/computemate.py --help`。
 
 ### 2. 给你的实验项目建一本账
 
 在**实际实验项目目录**运行；下面的 `lab-gpu` 请替换为你能正常连接的 SSH alias。
+首次使用该连接时，先在同一台客户端运行 `ssh lab-gpu`，完成主机指纹确认和认证，再退出 SSH 回到本地。ComputeMate 使用非交互连接，不会弹出密码或指纹确认提示。
 
 ```bash
 cd /path/to/your/experiment
@@ -86,6 +97,22 @@ computemate server list
 ```bash
 computemate --workspace /path/to/your/experiment --json snapshot
 ```
+
+<details>
+<summary>暂时没有服务器？先用示例台账体验</summary>
+
+从 ComputeMate 仓库运行以下命令。它只导入演示记录，不连接服务器：
+
+```bash
+mkdir -p /tmp/computemate-demo
+computemate init /tmp/computemate-demo
+computemate --workspace /tmp/computemate-demo inventory import --document-file examples/inventory.json
+computemate --workspace /tmp/computemate-demo server list
+```
+
+构建网页后，将下面网页启动命令中的项目路径替换为 `/tmp/computemate-demo`。示例 SSH 地址不可连接，换成自己的连接后再刷新。
+
+</details>
 
 ### 3. 把 Skill 接给 Agent
 
@@ -115,8 +142,11 @@ python3 skills/cloud-servers/scripts/computemate.py \
 ```
 
 打开终端输出的本机 URL。默认读取最近记录，点击刷新才重新探测；自动刷新可以手动开启。
+如果端口被占用，在 `serve` 后加 `--port 0` 自动选择空闲端口。每个项目启动自己的网页，页面顶部显示绑定的项目名称。
 
-VS Code 扩展运行 `npm run package:vscode` 构建，在编辑器中通过 **Install from VSIX** 安装 `extensions/vscode/computemate-0.1.0.vsix`。
+若想使用安装后的 `computemate serve`，请在构建完成后从仓库重新运行 `uv tool install --reinstall .`；使用虚拟环境安装的用户运行 `python3 -m pip install --force-reinstall .`。上面的独立脚本始终读取仓库内最新构建。
+
+VS Code 扩展运行 `npm run package:vscode` 构建，在编辑器中通过 **Install from VSIX** 安装 `extensions/vscode/computemate-0.1.0.vsix`。打开项目文件夹后，在 ComputeMate 活动栏点击“初始化此项目的台账”即可开始。
 
 ## 从找机器，到拿回结果
 
@@ -158,6 +188,7 @@ computemate --json operations
 - 资源记录带采集时间。连接失败保留最近结果并标记状态，缓存不会伪装成实时数据。
 
 当前已完成核心接口、真实回环 SSH、tmux、网页和 VS Code 宿主验证，并有 Linux GPU 服务器实机试用。Slurm 目前使用样例/模拟验证，真实集群联调范围见 [验证记录](VALIDATION.md)。
+安装与三端上手体验的检查结果见 [首次使用检查](docs/usability-review.md)。
 
 ## 一起把服务器杂活变少
 

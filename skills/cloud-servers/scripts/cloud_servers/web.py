@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hmac
+import errno
 import json
 import mimetypes
 import secrets
@@ -140,7 +141,26 @@ class Handler(BaseHTTPRequestHandler):
 def serve(db, port=8765, json_mode=False):
     if not 0 <= port <= 65535:
         raise Failure("invalid_argument", "Invalid TCP port")
-    server = WebServer(("127.0.0.1", port), db)
+    assets = Path(__file__).parent / "web_dist"
+    if not (assets / "index.html").is_file():
+        raise Failure(
+            "web_assets_missing",
+            "Web interface has not been built. In the ComputeMate repository, run "
+            "'npm ci' and 'npm run build', then use "
+            "'python3 skills/cloud-servers/scripts/computemate.py --workspace /path/to/project serve'. "
+            "For an installed CLI, reinstall after building with 'uv tool install --reinstall .' "
+            "or 'python3 -m pip install --force-reinstall .'.",
+        )
+    try:
+        server = WebServer(("127.0.0.1", port), db)
+    except OSError as exc:
+        if exc.errno == errno.EADDRINUSE:
+            raise Failure(
+                "port_in_use",
+                f"Port {port} is already in use. Use 'computemate serve --port 0' "
+                "to choose a free port, or specify another --port.",
+            ) from exc
+        raise
     url = server.origin + "/#token=" + server.token
     print(
         json_text(envelope({"url": url}))

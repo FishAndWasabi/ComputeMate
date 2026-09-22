@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build --config ui/vite.config.ts && node scripts/package-extension.mjs",
     "typecheck": "tsc --noEmit",
     "test": "python3 -m unittest discover -s tests -v",
+    "test:ui": "node --test tests/ui.test.mjs",
     "package:vscode": "npm run build && cd extensions/vscode && npx --yes @vscode/vsce@3.7.1 package --skip-license --out computemate-0.1.0.vsix"
   },
   "dependencies": {

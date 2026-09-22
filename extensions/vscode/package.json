@@ -61,6 +61,11 @@
     "menus": {
       "view/title": [
         {
+          "command": "cloudServers.initialize",
+          "when": "view == cloudServers.inventory",
+          "group": "setup"
+        },
+        {
           "command": "cloudServers.open",
           "when": "view == cloudServers.inventory",
           "group": "navigation"

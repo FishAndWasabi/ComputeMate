@@ -22,8 +22,13 @@ with tempfile.TemporaryDirectory(prefix="cloud-servers-vscode-") as directory:
         script = root / "skills/cloud-servers/scripts/cloud_servers.py"
         subprocess.run([__import__("sys").executable, str(script), "init", str(folder)], check=True, capture_output=True)
         subprocess.run([__import__("sys").executable, str(script), "--workspace", str(folder), "server", "add", "--id", "gpu", "--data", json.dumps({"name": name, "ssh": {"alias": "test.invalid"}})], check=True, capture_output=True)
+    (work / "Project-New").mkdir()
+    # Only the disposable test profile trusts these generated fixture folders.
+    settings = work / "profile/User/settings.json"
+    settings.parent.mkdir(parents=True)
+    settings.write_text(json.dumps({"security.workspace.trust.enabled": False}))
     workspace = work / "isolated.code-workspace"
-    workspace.write_text(json.dumps({"folders": [{"path": str(work / name)} for name in ("Project-A", "Project-B")]}))
+    workspace.write_text(json.dumps({"folders": [{"path": str(work / name)} for name in ("Project-A", "Project-B", "Project-New")]}))
     env = {
         **os.environ,
         "CLOUD_SERVERS_TEST_ROOT": str(work),
