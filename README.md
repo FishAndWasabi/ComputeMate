@@ -12,7 +12,7 @@ Your server sidekick. Your agent's compute toolkit.
 
 Keep servers, code, environments, and experiment artifacts organized by project. Let your agent operate; keep the whole picture in view.
 
-[Quick start](#quick-start) · [Ask your agent](#ask-your-agent) · [Visual interfaces](#see-whats-going-on) · [Usage guide (中文)](docs/usage.md) · [Feedback](https://github.com/FishAndWasabi/ComputeMate/issues)
+[Install for your agent](#quick-start) · [Ask your agent](#ask-your-agent) · [Visual interfaces](#see-whats-going-on) · [Usage guide (中文)](docs/usage.md) · [Feedback](https://github.com/FishAndWasabi/ComputeMate/issues)
 
 `Agent Skill` · `Python 3.11+` · `SSH / tmux / Slurm` · `CLI / Web / VS Code`
 
@@ -60,7 +60,71 @@ These are **example requests**. Actual operations depend on registered paths, ex
 
 The client needs **Python 3.11+ and OpenSSH**. File sync uses `rsync`; Git, tmux, and Slurm are needed for their respective operations. Remote hosts use Linux and Bash. Use macOS or Linux as the client, or WSL on Windows.
 
-### 1. Get the code and install the CLI
+### 1. Install for your agent (recommended)
+
+Open **your experiment project** in an agent with file and shell access, then paste the matching request below. The Skill includes its own Python scripts, so you can start without installing the CLI or launching the webpage.
+
+**Codex** — paste into chat:
+
+```text
+$skill-installer Install the skills/cloud-servers Skill from
+https://github.com/FishAndWasabi/ComputeMate
+into this project's .agents/skills directory, including its scripts and references.
+```
+
+**Claude Code** — paste into chat:
+
+```text
+Install ComputeMate for this project. Download the complete skills/cloud-servers
+directory from https://github.com/FishAndWasabi/ComputeMate into
+.claude/skills/cloud-servers, including its scripts and references.
+```
+
+**Cursor** — paste into Agent chat:
+
+```text
+Install ComputeMate for this project. Download the complete skills/cloud-servers
+directory from https://github.com/FishAndWasabi/ComputeMate into
+.cursor/skills/cloud-servers, including its scripts and references.
+```
+
+These examples use each agent's documented project Skill directory:
+
+| Agent | Installed Skill entry |
+| --- | --- |
+| [Codex](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills) | `.agents/skills/cloud-servers/SKILL.md` |
+| [Claude Code](https://code.claude.com/docs/en/skills) | `.claude/skills/cloud-servers/SKILL.md` |
+| [Cursor](https://cursor.com/help/customization/skills) | `.cursor/skills/cloud-servers/SKILL.md` |
+
+After installation, send this as your next request:
+
+```text
+Use the cloud-servers Skill to initialize this project's inventory with its
+bundled Python script. Show the bound project and list registered servers.
+```
+
+If the Skill has not appeared yet, reopen the agent in that project. Inventory data stays in the experiment project's `.cloud-servers/` directory. You can now continue with the [example requests](#ask-your-agent); the CLI route below is optional.
+
+<details>
+<summary>Prefer to copy the Skill yourself, or use another agent?</summary>
+
+Clone this repository, then run the installer from its root. Choose the destination for your agent; this Codex example uses an absolute path to the experiment project:
+
+```bash
+git clone https://github.com/FishAndWasabi/ComputeMate.git
+cd ComputeMate
+python3 scripts/package-skill.py --install-to /path/to/your/experiment/.agents/skills
+```
+
+For Claude Code, use `/path/to/your/experiment/.claude/skills`; for Cursor, use `/path/to/your/experiment/.cursor/skills`. The installer copies the whole `cloud-servers` folder and refuses to overwrite an existing installation.
+
+For another agent, use its supported Skill directory, or have it read [SKILL.md](skills/cloud-servers/SKILL.md) directly and call the bundled scripts. It needs file and shell access to run server operations.
+
+</details>
+
+### 2. Install the CLI (optional)
+
+For direct terminal use, run the following from a local checkout. If you already cloned the repository above, start with `uv tool install .` in that directory.
 
 ```bash
 git clone https://github.com/FishAndWasabi/ComputeMate.git
@@ -80,7 +144,9 @@ python3 -m pip install .
 
 You can also skip CLI installation and run `python3 skills/cloud-servers/scripts/computemate.py --help` directly.
 
-### 2. Give your experiment its own inventory
+### 3. Set up a project from the CLI
+
+If your agent already initialized the project, these commands use the same inventory.
 
 Run these commands in **your actual experiment project**. Replace `lab-gpu` with an SSH alias you can connect to.
 
@@ -116,16 +182,6 @@ computemate --workspace /tmp/computemate-demo server list
 After building the webpage, use `/tmp/computemate-demo` as the project path in the launch command below. The sample SSH destinations are placeholders; replace them with your own connections before refreshing.
 
 </details>
-
-### 3. Connect the Skill to your agent
-
-From this repository, copy the complete Skill into a directory your agent supports:
-
-```bash
-python3 scripts/package-skill.py --install-to /path/to/agent/skills
-```
-
-Alternatively, have your agent read [SKILL.md](skills/cloud-servers/SKILL.md) in the repository and use its scripts by relative path. Skill discovery depends on the agent host; the public scripts do not depend on any particular agent's tool names.
 
 ## See what's going on
 

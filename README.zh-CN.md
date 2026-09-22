@@ -12,7 +12,7 @@
 
 按项目管理服务器、代码、环境和实验产物。Agent 来操作，你随时看得见。
 
-[快速开始](#快速开始) · [交给 Agent](#交给-agent) · [可视化](#想自己看也很方便) · [使用指南](docs/usage.md) · [反馈建议](https://github.com/FishAndWasabi/ComputeMate/issues)
+[给 Agent 安装](#快速开始) · [交给 Agent](#交给-agent) · [可视化](#想自己看也很方便) · [使用指南](docs/usage.md) · [反馈建议](https://github.com/FishAndWasabi/ComputeMate/issues)
 
 `Agent Skill` · `Python 3.11+` · `SSH / tmux / Slurm` · `CLI / Web / VS Code`
 
@@ -60,7 +60,71 @@
 
 客户端需要 **Python 3.11+、OpenSSH**。文件同步使用 `rsync`；Git、tmux、Slurm 按实际功能使用。远端以 Linux/Bash 为基础，macOS 和 Linux 可作客户端，Windows 使用 WSL。
 
-### 1. 获取代码，安装命令
+### 1. 给 Agent 安装（推荐）
+
+先在能读写文件、执行 Shell 的 Agent 中打开**你的实验项目**，再复制对应的话术发送给它。Skill 自带 Python 脚本，无需先安装 CLI 或启动网页。
+
+**Codex** — 直接发送：
+
+```text
+$skill-installer 请从 https://github.com/FishAndWasabi/ComputeMate
+安装 skills/cloud-servers 这个 Skill 到当前项目的 .agents/skills 目录，
+包含其中的 scripts 和 references。
+```
+
+**Claude Code** — 直接发送：
+
+```text
+请给当前项目安装 ComputeMate。从 https://github.com/FishAndWasabi/ComputeMate
+下载完整的 skills/cloud-servers 目录到当前项目的 .claude/skills/cloud-servers，
+包含其中的 scripts 和 references。
+```
+
+**Cursor** — 在 Agent 对话中发送：
+
+```text
+请给当前项目安装 ComputeMate。从 https://github.com/FishAndWasabi/ComputeMate
+下载完整的 skills/cloud-servers 目录到当前项目的 .cursor/skills/cloud-servers，
+包含其中的 scripts 和 references。
+```
+
+以上示例使用各 Agent 官方文档中的项目 Skill 目录：
+
+| Agent | 安装后的 Skill 入口 |
+| --- | --- |
+| [Codex](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills) | `.agents/skills/cloud-servers/SKILL.md` |
+| [Claude Code](https://code.claude.com/docs/en/skills) | `.claude/skills/cloud-servers/SKILL.md` |
+| [Cursor](https://cursor.com/help/customization/skills) | `.cursor/skills/cloud-servers/SKILL.md` |
+
+安装后，下一条消息就可以这样发：
+
+```text
+使用 cloud-servers Skill，通过它自带的 Python 脚本初始化当前项目的台账，
+显示绑定的项目，并列出已登记的服务器。
+```
+
+如果 Skill 尚未出现，重新在该项目中打开 Agent。台账保存在实验项目的 `.cloud-servers/` 目录中。接下来可以直接参考上面的[请求示例](#交给-agent)使用；下面的 CLI 安装是可选方式。
+
+<details>
+<summary>想自己复制 Skill，或使用其他 Agent？</summary>
+
+克隆本仓库后，在仓库根目录运行安装脚本。按 Agent 选择目标目录；下面以 Codex 为例，使用实验项目的绝对路径：
+
+```bash
+git clone https://github.com/FishAndWasabi/ComputeMate.git
+cd ComputeMate
+python3 scripts/package-skill.py --install-to /path/to/your/experiment/.agents/skills
+```
+
+Claude Code 使用 `/path/to/your/experiment/.claude/skills`，Cursor 使用 `/path/to/your/experiment/.cursor/skills`。脚本会复制完整的 `cloud-servers` 目录，遇到已有安装时拒绝覆盖。
+
+其他 Agent 可使用其支持的 Skill 目录，或直接读取 [SKILL.md](skills/cloud-servers/SKILL.md) 并调用配套脚本。执行服务器操作需要 Agent 具备文件和 Shell 访问能力。
+
+</details>
+
+### 2. 安装 CLI（可选）
+
+需要自己在终端操作时，再运行以下命令。如果上面已克隆仓库，直接在该目录从 `uv tool install .` 开始即可。
 
 ```bash
 git clone https://github.com/FishAndWasabi/ComputeMate.git
@@ -80,7 +144,9 @@ python3 -m pip install .
 
 不安装 CLI 时，直接调用 `python3 skills/cloud-servers/scripts/computemate.py --help`。
 
-### 2. 给你的实验项目建一本账
+### 3. 通过 CLI 配置项目
+
+如果 Agent 已经初始化过项目，下面的命令会使用同一份台账。
 
 在**实际实验项目目录**运行；下面的 `lab-gpu` 请替换为你能正常连接的 SSH alias。
 首次使用该连接时，先在同一台客户端运行 `ssh lab-gpu`，完成主机指纹确认和认证，再退出 SSH 回到本地。ComputeMate 使用非交互连接，不会弹出密码或指纹确认提示。
@@ -115,16 +181,6 @@ computemate --workspace /tmp/computemate-demo server list
 构建网页后，将下面网页启动命令中的项目路径替换为 `/tmp/computemate-demo`。示例 SSH 地址不可连接，换成自己的连接后再刷新。
 
 </details>
-
-### 3. 把 Skill 接给 Agent
-
-从本仓库运行，将完整 Skill 复制到你的 Agent 支持的目录：
-
-```bash
-python3 scripts/package-skill.py --install-to /path/to/agent/skills
-```
-
-也可以让 Agent 直接读取仓库中的 [SKILL.md](skills/cloud-servers/SKILL.md)，使用其相对路径下的脚本。自动发现规则由 Agent 宿主决定，公共脚本不依赖特定 Agent 工具名。
 
 ## 想自己看，也很方便
 
